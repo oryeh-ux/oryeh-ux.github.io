@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>問答遊戲</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+    .question { margin-bottom: 20px; }
+    .options button { margin: 5px 0; display: block; }
+    #start-btn, #next-btn, #submit-btn { margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <h2>緊急應變訓練問答</h2>
+
+  <div id="quiz">
+    <div class="question" id="q0">
+      <label>1. 請輸入員編：</label><br/>
+      <input type="text" id="empId" required><br/><br/>
+      <label>請輸入姓名：</label><br/>
+      <input type="text" id="empName" required>
+    </div>
+
+    <div class="question" id="q1" style="display:none;">
+      <label>2. 你曾經處理過緊急情況嗎？若有，是甚麼情況請簡述：</label><br/>
+      <textarea id="emergencyExperience" rows="4" cols="50"></textarea>
+    </div>
+
+    <div class="question" id="q2" style="display:none;">
+      <p>3. 當顧客失去意識時 CODE 500，第一時間你會做什麼？</p>
+      <div class="options">
+        <button onclick="checkAnswer(2, 0)">A. 由值班經理撥打119 或 授權當區同仁撥打</button>
+        <button onclick="checkAnswer(2, 1)">B. 開啟密錄器</button>
+        <button onclick="checkAnswer(2, 2)">C. 通知家人</button>
+        <button onclick="checkAnswer(2, 3)">D. 等待幫助</button>
+      </div>
+    </div>
+
+    <div class="question" id="q3" style="display:none;">
+      <p>4. 你聽到第一次 CODE 1000 廣播，要先趕往哪裡？</p>
+      <div class="options">
+        <button onclick="checkAnswer(3, 0)">A. 緊急集合地點(文心森林公園)</button>
+        <button onclick="checkAnswer(3, 1)">B. 中控室</button>
+        <button onclick="checkAnswer(3, 2)">C. 火災現場</button>
+        <button onclick="checkAnswer(3, 3)">D. 1F Greeting 入口</button>
+      </div>
+    </div>
+
+    <div class="question" id="q4" style="display:none;">
+      <p>5. 疏散後到達集合地點，你會做什麼？</p>
+      <div class="options">
+        <button onclick="checkAnswer(4, 0)">A. 等待指示</button>
+        <button onclick="checkAnswer(4, 1)">B. 清點人數</button>
+        <button onclick="checkAnswer(4, 2)">C. 通知媒體</button>
+        <button onclick="checkAnswer(4, 3)">D. 拍照</button>
+      </div>
+    </div>
+
+    <button id="start-btn" onclick="nextQuestion()">開始作答</button>
+    <button id="next-btn" onclick="nextQuestion()" style="display:none;">下一題</button>
+
+    <div id="result" style="display:none; margin-top: 30px;">
+      <h3>作答完成！</h3>
+      <p id="summary"></p>
+    </div>
+  </div>
+
+  <script>
+    const correctAnswers = [null, null, 0, 0, 1]; // 對應 q0~q4 的正確答案
+    let currentQuestion = 0;
+    let score = 0;
+
+    function nextQuestion() {
+      document.getElementById(`q${currentQuestion}`).style.display = "none";
+      currentQuestion++;
+      const nextQ = document.getElementById(`q${currentQuestion}`);
+      if (nextQ) {
+        nextQ.style.display = "block";
+        document.getElementById("start-btn").style.display = "none";
+        if (currentQuestion >= 2) {
+          document.getElementById("next-btn").style.display = "none";
+        } else {
+          document.getElementById("next-btn").style.display = "block";
+        }
+      }
+    }
+
+    function checkAnswer(qIndex, selected) {
+      if (selected === correctAnswers[qIndex]) {
+        score++;
+      }
+      document.getElementById(`q${qIndex}`).style.display = "none";
+      if (qIndex < 4) {
+        document.getElementById(`q${qIndex + 1}`).style.display = "block";
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      const name = document.getElementById("empName").value;
+      const id = document.getElementById("empId").value;
+      const experience = document.getElementById("emergencyExperience").value;
+      document.getElementById("result").style.display = "block";
+      document.getElementById("summary").innerHTML =
+        `員編：${id}<br>姓名：${name}<br>緊急經驗描述：${experience}<br>得分：${score} / 3`;
+    }
+  </script>
+
+</body>
+</html>
