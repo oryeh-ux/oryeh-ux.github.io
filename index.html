@@ -45,13 +45,12 @@
       <input type="text" id="empName" required><br/>
     </div>
 
-    <!-- Sample question: copy and modify for Q1 to Q21 -->
     <div class="question" id="q1">
       <label>2. 您曾經遇過最緊急情況嗎？若有，是在賣場哪個區：</label><br/>
       <textarea id="emergencyExperience" rows="4" cols="50"></textarea>
     </div>
 
-    <!-- 在這裡加入 q2 到 q21 題目，每一題都要包在 .question 裡面，id="q2", id="q3", ..., id="q21" -->
+    <!-- 建議在這裡依序加入 q2 到 q21 的題目 -->
 
     <button id="next-btn" onclick="nextQuestion()">下一題</button>
   </div>
@@ -59,6 +58,7 @@
   <script>
     const questions = document.querySelectorAll('.question');
     const totalQuestions = questions.length;
+
     const backgrounds = [
       "Q1.webp", "Q2.webp", "Q3.webp", "Q4.webp", "Q5.webp",
       "Q6.webp", "Q7.webp", "Q8.webp", "Q9.webp", "Q10.webp",
@@ -71,15 +71,30 @@
 
     function nextQuestion() {
       if (current < totalQuestions - 1) {
+        // 移除當前題目的 active 類別
         questions[current].classList.remove('active');
+
+        // 切換到下一題
         current++;
-        questions[current].classList.add('active');
-        document.body.style.backgroundImage = `url('${backgrounds[current - 1]}')`;
+        const nextQ = questions[current];
+
+        // 移除再加回動畫（可重新播放動畫）
+        nextQ.classList.remove('active'); // 確保重新渲染
+        void nextQ.offsetWidth; // 觸發 reflow
+        nextQ.classList.add('active');
+
+        // 設定背景圖（跳過 q0）
+        if (current > 0) {
+          const bgIndex = current - 1;
+          document.body.style.backgroundImage = `url('${backgrounds[bgIndex]}')`;
+        } else {
+          document.body.style.backgroundImage = '';
+        }
       }
     }
 
-    // 預設背景圖為 Q1
-    document.body.style.backgroundImage = `url('${backgrounds[0]}')`;
+    // 預設員編頁不顯示背景圖
+    document.body.style.backgroundImage = '';
   </script>
 </body>
 </html>
