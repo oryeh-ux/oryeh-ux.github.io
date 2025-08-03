@@ -16,7 +16,7 @@
     .question {
       display: none;
       animation: bounceIn 0.8s;
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.9);
       padding: 20px;
       border-radius: 10px;
     }
@@ -38,30 +38,11 @@
       60% { transform: scale(1.05); opacity: 1; }
       100% { transform: scale(1); }
     }
-    .sortable-list {
-      list-style: none;
-      padding-left: 0;
-    }
-    .sortable-list li {
-      background: #fff;
-      margin: 5px 0;
-      padding: 10px;
-      border: 1px solid #ccc;
-      cursor: grab;
-    }
   </style>
 </head>
 <body>
   <h2>緊急應變問答遊戲</h2>
-  <div id="quiz">
-    <!-- Q0: 輸入員工編號與姓名 -->
-    <div class="question active" id="q0">
-      <label>請輸入員編：</label><br />
-      <input type="text" id="empId" required /><br /><br />
-      <label>請輸入姓名：</label><br />
-      <input type="text" id="empName" required />
-    </div>
-  </div>
+  <div id="quiz"></div>
 
   <div>
     <button id="next-btn" onclick="nextQuestion()">下一題</button>
@@ -73,18 +54,128 @@
     <p id="scoreDisplay"></p>
     <button onclick="exportCSV()">匯出CSV</button>
   </div>
+
   <script>
-    const backgrounds = [
-      "", "Q1.webp", "Q2.webp", "Q3.webp", "Q4.webp", "Q5.webp", "Q6.webp", "Q7.webp",
-      "Q8.webp", "Q9.webp", "Q10.webp", "Q11.jfif", "Q12.webp", "Q13.webp", "Q14.webp",
-      "Q15.jfif", "Q16.webp", "Q17.webp", "Q18.jfif", "Q19.webp", "Q20.webp", "Q21.webp"
+    const questionsData = [
+      {
+        type: "info", html: `
+          <label>請輸入員編：</label><br />
+          <input type="text" id="empId" required /><br /><br />
+          <label>請輸入姓名：</label><br />
+          <input type="text" id="empName" required />
+        `
+      },
+      {
+        type: "text", question: "1. 你曾經處理過緊急情況嗎？若有，是甚麼情況請簡述"
+      },
+      {
+        type: "multi", correct: ["0", "1"], question: "2. 當顧客失去意識時 CODE 500，第一時間你會做什麼？", options: [
+          "A. 由值班經理撥打119 或 授權當區同仁撥打",
+          "B. 開啟密錄器",
+          "C. 通知家人",
+          "D. 等待幫助"
+        ]
+      },
+      {
+        type: "single", correct: "2", question: "3. 你聽到第一次 CODE 1000廣播，要先趕往哪裡？", options: [
+          "A. 緊急集合地點(文心森林公園)",
+          "B. 中控室",
+          "C. 火災現場",
+          "D. 1F Greeting 入口"
+        ]
+      },
+      {
+        type: "single", correct: "1", question: "4. 疏散後到達集合地點，你會做什麼？", options: [
+          "A. 等待指示",
+          "B. 清點人數",
+          "C. 通知媒體",
+          "D. 拍照"
+        ]
+      },
+      {
+        type: "single", correct: "0", question: "5. 颱風海上警報發布後，你會做什麼？", options: [
+          "A. 召集應變小組",
+          "B. 通知顧客",
+          "C. 拍照",
+          "D. 關閉店鋪"
+        ]
+      },
+      {
+        type: "multi", correct: ["1", "2", "3"], question: "6. 營業中賣場突然停電時，你會做什麼？", options: [
+          "A. 通知媒體",
+          "B. 確認發電機正常運作",
+          "C. 確認POS正常結帳",
+          "D. 安撫顧客",
+          "E. 等待幫助",
+          "F. 立即啟動CODE 1000疏散顧客"
+        ]
+      },
+      {
+        type: "single", correct: "3", question: "7. CODE 1000時，Smaland小朋友何時可被領走？", options: [
+          "A. 疏散前",
+          "B. 立即",
+          "C. 隨時",
+          "D. 點名後"
+        ]
+      },
+      {
+        type: "single", correct: "2", question: "8. 非轄區警察要求監視器影帶，你會怎麼做？", options: [
+          "A. 通知MKT",
+          "B. 等待總公司指示",
+          "C. 婉轉拒絕",
+          "D. 立即提供"
+        ]
+      },
+      {
+        type: "multi", correct: ["2", "3", "4"], question: "9. 顧客被賣場展示的破裂碗盤割傷，你會做什麼？", options: [
+          "A. 等待幫助",
+          "B. 通知媒體",
+          "C. 確認現場其他商品",
+          "D. 由客服陪同就醫",
+          "E. 拍照",
+          "F. 啟動保險承諾顧客賠償以示負責"
+        ]
+      },
+      {
+        type: "multi", correct: ["1", "2", "4"], question: "10. 員工工作中受傷住院，你會做什麼？", options: [
+          "A. 疏散顧客",
+          "B. 圍起現場確認有無其他危險",
+          "C. 拍下現場照片",
+          "D. 通知媒體",
+          "E. 立刻通報HR及Safety",
+          "F. 填寫CRM"
+        ]
+      }
     ];
+
+    const quizDiv = document.getElementById("quiz");
+    questionsData.forEach((q, i) => {
+      const div = document.createElement("div");
+      div.className = "question";
+      div.id = `q${i}`;
+      if (i === 0) div.classList.add("active");
+
+      if (q.type === "info") {
+        div.innerHTML = q.html;
+      } else if (q.type === "text") {
+        div.dataset.type = "text";
+        div.innerHTML = `<p>${q.question}</p><textarea rows="4" cols="60"></textarea>`;
+      } else {
+        div.dataset.type = q.type;
+        div.dataset.correct = Array.isArray(q.correct) ? q.correct.join(",") : q.correct;
+        div.innerHTML = `<p>${q.question}</p><div class="options">` +
+          q.options.map((opt, idx) =>
+            `<label><input type="${q.type === 'multi' ? 'checkbox' : 'radio'}" name="q${i}" value="${idx}"> ${opt}</label><br/>`
+          ).join("") + "</div>";
+      }
+      quizDiv.appendChild(div);
+    });
 
     let current = 0;
     let score = 0;
-    let userAnswers = [];
+    let quizExport = [];
 
-    const quizDiv = document.getElementById("quiz");
+    const backgrounds = ["", "Q1.webp", "Q2.webp", "Q3.webp", "Q4.webp", "Q5.webp", "Q6.webp", "Q7.webp", "Q8.webp", "Q9.webp", "Q10.webp"];
 
     function nextQuestion() {
       const questions = document.querySelectorAll(".question");
@@ -101,7 +192,6 @@
         current++;
         questions[current].classList.add("active");
 
-        // 背景圖
         document.body.style.backgroundImage =
           current === 0 ? "none" : `url('${backgrounds[current]}')`;
 
@@ -116,7 +206,7 @@
       score = 0;
       const name = document.getElementById("empName").value.trim();
       const id = document.getElementById("empId").value.trim();
-      const totalQuestions = document.querySelectorAll(".question").length - 1; // 不含 q0
+      const totalQuestions = questionsData.length - 1;
 
       for (let i = 1; i <= totalQuestions; i++) {
         const q = document.getElementById(`q${i}`);
@@ -138,12 +228,6 @@
             selected.every(ans => correctSet.includes(ans))
           ) score++;
         }
-
-        if (type === "order") {
-          const selected = [...q.querySelectorAll("ol li")].map(li => li.dataset.value);
-          const correctOrder = correct.split(",");
-          if (JSON.stringify(selected) === JSON.stringify(correctOrder)) score++;
-        }
       }
 
       document.getElementById("quiz").style.display = "none";
@@ -151,15 +235,12 @@
       document.getElementById("submit-btn").style.display = "none";
       document.getElementById("result").style.display = "block";
       document.getElementById("scoreDisplay").innerText = `員編：${id}，姓名：${name}，得分：${score} / ${totalQuestions}`;
-
-      // 匯出記錄儲存
-      if (!window.quizExport) window.quizExport = [];
-      window.quizExport.push({ id, name, score });
+      quizExport.push({ id, name, score });
     }
 
     function exportCSV() {
       const rows = [["員編", "姓名", "得分"]];
-      window.quizExport.forEach(row => {
+      quizExport.forEach(row => {
         rows.push([row.id, row.name, row.score]);
       });
       const csvContent = rows.map(e => e.join(",")).join("\n");
@@ -170,118 +251,6 @@
       a.download = "quiz_result.csv";
       a.click();
     }
-
-    document.body.style.backgroundImage = `none`;
   </script>
 </body>
 </html>
-<!-- Q1 -->
-<div class="question" id="q1">
-  <p>1. 你曾經處理過緊急情況嗎？若有，是甚麼情況請簡述</p>
-  <textarea id="ans1" rows="4" cols="60"></textarea>
-</div>
-
-<!-- Q2 -->
-<div class="question" id="q2">
-  <p>2. 當顧客失去意識時 CODE 500，第一時間你會做什麼？</p>
-  <div class="options">
-    <label><input type="checkbox" name="q2" value="0"> A. 由值班經理撥打119 或 授權當區同仁撥打</label><br/>
-    <label><input type="checkbox" name="q2" value="1"> B. 開啟密錄器</label><br/>
-    <label><input type="checkbox" name="q2" value="2"> C. 通知家人</label><br/>
-    <label><input type="checkbox" name="q2" value="3"> D. 等待幫助</label><br/>
-  </div>
-</div>
-
-<!-- Q3 -->
-<div class="question" id="q3">
-  <p>3. 你聽到第一次 CODE 1000廣播，要先趕往哪裡？</p>
-  <div class="options">
-    <label><input type="radio" name="q3" value="0"> A. 緊急集合地點(文心森林公園)</label><br/>
-    <label><input type="radio" name="q3" value="1"> B. 中控室</label><br/>
-    <label><input type="radio" name="q3" value="2"> C. 火災現場</label><br/>
-    <label><input type="radio" name="q3" value="3"> D. 1F Greeting 入口</label><br/>
-  </div>
-</div>
-
-<!-- Q4 -->
-<div class="question" id="q4">
-  <p>4. 疏散後到達集合地點，你會做什麼？</p>
-  <div class="options">
-    <label><input type="radio" name="q4" value="0"> A. 等待指示</label><br/>
-    <label><input type="radio" name="q4" value="1"> B. 清點人數</label><br/>
-    <label><input type="radio" name="q4" value="2"> C. 通知媒體</label><br/>
-    <label><input type="radio" name="q4" value="3"> D. 拍照</label><br/>
-  </div>
-</div>
-
-<!-- Q5 -->
-<div class="question" id="q5">
-  <p>5. 颱風海上警報發布後，你會做什麼？</p>
-  <div class="options">
-    <label><input type="radio" name="q5" value="0"> A. 召集應變小組</label><br/>
-    <label><input type="radio" name="q5" value="1"> B. 通知顧客</label><br/>
-    <label><input type="radio" name="q5" value="2"> C. 拍照</label><br/>
-    <label><input type="radio" name="q5" value="3"> D. 關閉店鋪</label><br/>
-  </div>
-</div>
-
-<!-- Q6 -->
-<div class="question" id="q6">
-  <p>6. 營業中賣場突然停電時，你會做什麼？</p>
-  <div class="options">
-    <label><input type="checkbox" name="q6" value="0"> A. 通知媒體</label><br/>
-    <label><input type="checkbox" name="q6" value="1"> B. 確認發電機正常運作</label><br/>
-    <label><input type="checkbox" name="q6" value="2"> C. 確認POS正常結帳</label><br/>
-    <label><input type="checkbox" name="q6" value="3"> D. 安撫顧客</label><br/>
-    <label><input type="checkbox" name="q6" value="4"> E. 等待幫助</label><br/>
-    <label><input type="checkbox" name="q6" value="5"> F. 立即啟動CODE 1000疏散顧客</label><br/>
-  </div>
-</div>
-
-<!-- Q7 -->
-<div class="question" id="q7">
-  <p>7. CODE 1000時，Smaland小朋友何時可被領走？</p>
-  <div class="options">
-    <label><input type="radio" name="q7" value="0"> A. 疏散前</label><br/>
-    <label><input type="radio" name="q7" value="1"> B. 立即</label><br/>
-    <label><input type="radio" name="q7" value="2"> C. 隨時</label><br/>
-    <label><input type="radio" name="q7" value="3"> D. 點名後</label><br/>
-  </div>
-</div>
-
-<!-- Q8 -->
-<div class="question" id="q8">
-  <p>8. 非轄區警察要求監視器影帶，你會怎麼做？</p>
-  <div class="options">
-    <label><input type="radio" name="q8" value="0"> A. 通知MKT</label><br/>
-    <label><input type="radio" name="q8" value="1"> B. 等待總公司指示</label><br/>
-    <label><input type="radio" name="q8" value="2"> C. 婉轉拒絕</label><br/>
-    <label><input type="radio" name="q8" value="3"> D. 立即提供</label><br/>
-  </div>
-</div>
-
-<!-- Q9 -->
-<div class="question" id="q9">
-  <p>9. 顧客被賣場展示的破裂碗盤割傷，你會做什麼？</p>
-  <div class="options">
-    <label><input type="checkbox" name="q9" value="0"> A. 等待幫助</label><br/>
-    <label><input type="checkbox" name="q9" value="1"> B. 通知媒體</label><br/>
-    <label><input type="checkbox" name="q9" value="2"> C. 確認現場其他商品</label><br/>
-    <label><input type="checkbox" name="q9" value="3"> D. 由客服陪同就醫</label><br/>
-    <label><input type="checkbox" name="q9" value="4"> E. 拍照</label><br/>
-    <label><input type="checkbox" name="q9" value="5"> F. 啟動保險承諾顧客賠償以示負責</label><br/>
-  </div>
-</div>
-
-<!-- Q10 -->
-<div class="question" id="q10">
-  <p>10. 員工工作中受傷住院，你會做什麼？</p>
-  <div class="options">
-    <label><input type="checkbox" name="q10" value="0"> A. 疏散顧客</label><br/>
-    <label><input type="checkbox" name="q10" value="1"> B. 圍起現場確認有無其他危險</label><br/>
-    <label><input type="checkbox" name="q10" value="2"> C. 拍下現場照片</label><br/>
-    <label><input type="checkbox" name="q10" value="3"> D. 通知媒體</label><br/>
-    <label><input type="checkbox" name="q10" value="4"> E. 立刻通報HR及Safety</label><br/>
-    <label><input type="checkbox" name="q10" value="5"> F. 填寫CRM</label><br/>
-  </div>
-</div>
