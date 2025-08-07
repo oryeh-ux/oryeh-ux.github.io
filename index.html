@@ -147,110 +147,131 @@
         ]
       }
     ];
+{
+  type: "multi", correct: ["0", "2", "4"], question: "11. 兩個顧客在賣場大打出手時，你會做什麼？", options: [
+    "A. 開啟密錄器",
+    "B. 通知MKT",
+    "C. 保持距離口頭緩和雙方情緒",
+    "D. 用肉身將兩人拉開",
+    "E. 報警處理",
+    "F. 讓保全去勸架"
+  ]
+},
+{
+  type: "multi", correct: ["0", "1", "2"], question: "12. 堆高機傾倒，無人受傷，你會做什麼？", options: [
+    "A. 拍下現場照片",
+    "B. 圍起現場",
+    "C. 安撫員工",
+    "D. 通知總公司"
+  ]
+},
+{
+  type: "multi", correct: ["1", "2"], question: "13. 小孩跌倒受傷，家屬質疑環境不安全，你會做什麼？", options: [
+    "A. 承諾公司會負責",
+    "B. 確認是否IKEA疏失造成受傷",
+    "C. 開啟密錄器",
+    "D. 通知媒體"
+  ]
+},
+{
+  type: "multi", correct: ["1", "2"], question: "14. 顧客一個人來逛，上廁所時地板濕滑跌倒受傷，第一時間你會做什麼？", options: [
+    "A. 等待清潔",
+    "B. 拍下現場照片",
+    "C. 請客服陪同就醫",
+    "D. 通知總公司"
+  ]
+},
+{
+  type: "order", correct: ["2", "1", "0", "3"], question: "15. 地震劇烈搖晃後，第一時間你會做什麼，請依照順序排列先後？", options: [
+    "A. 經回報有安全疑慮且已明顯影響營運，啟動CODE1000疏散",
+    "B. 前往中控室，使用CCTV觀察現場狀況",
+    "C. 通知各區Duty檢查狀況",
+    "D. 通報店經理。待餘震結束派EOT(各部門Duty)進入確認店內狀況安全回報後，再帶隊回店復原"
+  ]
+},
+{
+  type: "single", correct: "1", question: "17. 於停車場擦撞事故，顧客要求IKEA負責，你會怎麼做？", options: [
+    "A. 通知總公司",
+    "B. 通知警察",
+    "C. 跟顧客要報價單",
+    "D. 啟動保險賠償"
+  ]
+},
+{
+  type: "order", correct: ["1", "0", "2"], question: "18. 顧客拆封商品放包包內，且確認他帶了商品準備通過收銀檯，你會怎麼做？請依順序排列", options: [
+    "甲、如不願配合待警方到場，待警員到場請顧客配合打開包包檢查",
+    "乙、委婉詢問顧客是否有未結帳商品",
+    "丙、報警並委婉請顧客主動打開包包"
+  ]
+},
+{
+  type: "single", correct: "1", question: "19. 顧客反應有全身髒臭的顧客在店內閒晃，你會怎麼做？", options: [
+    "A. 通知保全驅離",
+    "B. 通知警察到場協助",
+    "C. 通知CR Duty驅離",
+    "D. 不管他"
+  ]
+},
+{
+  type: "multi", correct: ["0", "1"], question: "20. 有顧客錄影直播消費/服務糾紛，你會怎麼做？", options: [
+    "A. 明示拒絕錄影",
+    "B. 開啟密錄器",
+    "C. 通知警方到場",
+    "D. 直播是他人自由不管他"
+  ]
+},
+{
+  type: "multi", correct: ["0", "2"], question: "21. 員工操作推車失誤撞到顧客，你會怎麼做？", options: [
+    "A. 拍下現場照片",
+    "B. 啟動保險理賠",
+    "C. 請CR Duty陪同就醫",
+    "D. 通知警察到場"
+  ]
+}
+function submitQuiz() {
+  score = 0;
+  const name = document.getElementById("empName").value.trim();
+  const id = document.getElementById("empId").value.trim();
+  const totalQuestions = questionsData.length - 1;
 
-    const quizDiv = document.getElementById("quiz");
-    questionsData.forEach((q, i) => {
-      const div = document.createElement("div");
-      div.className = "question";
-      div.id = `q${i}`;
-      if (i === 0) div.classList.add("active");
+  for (let i = 1; i <= totalQuestions; i++) {
+    const q = document.getElementById(`q${i}`);
+    const type = q.dataset.type;
+    const correct = q.dataset.correct;
 
-      if (q.type === "info") {
-        div.innerHTML = q.html;
-      } else if (q.type === "text") {
-        div.dataset.type = "text";
-        div.innerHTML = `<p>${q.question}</p><textarea rows="4" cols="60"></textarea>`;
-      } else {
-        div.dataset.type = q.type;
-        div.dataset.correct = Array.isArray(q.correct) ? q.correct.join(",") : q.correct;
-        div.innerHTML = `<p>${q.question}</p><div class="options">` +
-          q.options.map((opt, idx) =>
-            `<label><input type="${q.type === 'multi' ? 'checkbox' : 'radio'}" name="q${i}" value="${idx}"> ${opt}</label><br/>`
-          ).join("") + "</div>";
-      }
-      quizDiv.appendChild(div);
-    });
+    if (type === "text") continue; // 不計分
 
-    let current = 0;
-    let score = 0;
-    let quizExport = [];
-
-    const backgrounds = ["", "Q1.webp", "Q2.webp", "Q3.webp", "Q4.webp", "Q5.webp", "Q6.webp", "Q7.webp", "Q8.webp", "Q9.webp", "Q10.webp"];
-
-    function nextQuestion() {
-      const questions = document.querySelectorAll(".question");
-      const empId = document.getElementById("empId")?.value?.trim();
-      const empName = document.getElementById("empName")?.value?.trim();
-
-      if (current === 0 && (!empId || !empName)) {
-        alert("請輸入員編與姓名！");
-        return;
-      }
-
-      if (current < questions.length - 1) {
-        questions[current].classList.remove("active");
-        current++;
-        questions[current].classList.add("active");
-
-        document.body.style.backgroundImage =
-          current === 0 ? "none" : `url('${backgrounds[current]}')`;
-
-        document.getElementById("next-btn").style.display =
-          current === questions.length - 1 ? "none" : "inline-block";
-        document.getElementById("submit-btn").style.display =
-          current === questions.length - 1 ? "inline-block" : "none";
+    if (type === "single") {
+      const selected = q.querySelector("input[type='radio']:checked");
+      if (selected && selected.value === correct) {
+        score++;
       }
     }
 
-    function submitQuiz() {
-      score = 0;
-      const name = document.getElementById("empName").value.trim();
-      const id = document.getElementById("empId").value.trim();
-      const totalQuestions = questionsData.length - 1;
-
-      for (let i = 1; i <= totalQuestions; i++) {
-        const q = document.getElementById(`q${i}`);
-        const type = q.dataset.type;
-        const correct = q.dataset.correct;
-
-        if (type === "text") continue;
-
-        if (type === "single") {
-          const selected = q.querySelector("input[type='radio']:checked");
-          if (selected && selected.value === correct) score++;
-        }
-
-        if (type === "multi") {
-          const selected = [...q.querySelectorAll("input[type='checkbox']:checked")].map(e => e.value);
-          const correctSet = correct.split(",");
-          if (
-            selected.length === correctSet.length &&
-            selected.every(ans => correctSet.includes(ans))
-          ) score++;
-        }
+    if (type === "multi") {
+      const selected = [...q.querySelectorAll("input[type='checkbox']:checked")].map(e => e.value);
+      const correctSet = correct.split(",");
+      if (
+        selected.length === correctSet.length &&
+        selected.every(ans => correctSet.includes(ans))
+      ) {
+        score++;
       }
-
-      document.getElementById("quiz").style.display = "none";
-      document.getElementById("next-btn").style.display = "none";
-      document.getElementById("submit-btn").style.display = "none";
-      document.getElementById("result").style.display = "block";
-      document.getElementById("scoreDisplay").innerText = `員編：${id}，姓名：${name}，得分：${score} / ${totalQuestions}`;
-      quizExport.push({ id, name, score });
     }
 
-    function exportCSV() {
-      const rows = [["員編", "姓名", "得分"]];
-      quizExport.forEach(row => {
-        rows.push([row.id, row.name, row.score]);
-      });
-      const csvContent = rows.map(e => e.join(",")).join("\n");
-      const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "quiz_result.csv";
-      a.click();
+    if (type === "order") {
+      const selected = [...q.querySelectorAll("input[type='checkbox']:checked")].map(e => e.value);
+      const correctOrder = correct.split(",");
+      if (selected.join(",") === correctOrder.join(",")) {
+        score++;
+      }
     }
-  </script>
-</body>
-</html>
+  }
+
+  document.getElementById("quiz").style.display = "none";
+  document.getElementById("next-btn").style.display = "none";
+  document.getElementById("submit-btn").style.display = "none";
+  document.getElementById("result").style.display = "block";
+  document.getElementById("scoreDisplay").innerText = `員編：${id}，姓名：${name}，得分：${score} / ${totalQuestions}`;
+  quizExport.push({ id, name, score });
+}
